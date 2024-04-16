@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 import scipy as sp
 
+
 def moving_average(data, window_size):
     """
     Apply a moving average filter to the data.
@@ -109,7 +110,8 @@ def estimate_with_noise_2(trajectory,mlag,k=2):
     Y. Lanoiselée, G. Sikora, A. Grzesiek, D. S. Grebenkov, and A. Wyłomańska,
     "Optimal parameters for anomalous-diffusion-exponent estimation from noisy data"
     Phys. Rev. E 98, 062139 (2018).
-    """    
+    """
+    dt = 1.0 / len(trajectory[:,0])
     empirical_msd = generate_empirical_msd(trajectory,mlag,k)
     n_list = np.array(range(1,mlag+1)) #inaczej niż w oryginale
     s2_max = empirical_msd[0]
@@ -135,7 +137,8 @@ def estimate_with_noise_3(trajectory,mlag,k=2):
     Y. Lanoiselée, G. Sikora, A. Grzesiek, D. S. Grebenkov, and A. Wyłomańska,
     "Optimal parameters for anomalous-diffusion-exponent estimation from noisy data"
     Phys. Rev. E 98, 062139 (2018).
-    """          
+    """
+    dt = 1.0 / len(trajectory[:,0])  
     empirical_msd = generate_empirical_msd(trajectory,mlag,k)
     n_list = np.array(range(1,mlag+1)) #POTENCJALNY BLAD w RANGE
     alpha_0 = 1
