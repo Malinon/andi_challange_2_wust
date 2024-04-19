@@ -7,6 +7,28 @@ class State(Enum):
     Directed = "3"
 
 
+class Model(Enum):
+    SINGLE_STATE = 'single_state',
+    MULTI_STATE = 'multi_state',
+    IMMOBILE_TRAPS ='immobile_traps',
+    DIMERIZATION = 'dimerization',
+    CONFINEMENT = 'confinement'
+    
+
+
+class EnsembleResult():
+    def __init__(self, model, alphas_mean, alphas_var, d_mean, d_alpha, weights):
+        self.model = model
+        self.alphas_mean  = alphas_mean
+        self.alphas_var = alphas_var
+        self.d_mean = d_mean
+        self.d_alpha = d_alpha
+        self.weights = weights
+    def get_number_of_states(self):
+        return len(self.alphas_mean)
+    
+
+
 class SegmentProperties:
     def __init__(self, K, alpha, state, endpoint):
         self.K = K
