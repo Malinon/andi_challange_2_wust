@@ -32,10 +32,11 @@ class EnsembleResult():
 
 
 class SegmentProperties:
-    def __init__(self, K, alpha, state, endpoint):
+    def __init__(self, K, alpha, state, endpoint, length):
         self.K = K
         self.alpha = alpha
         self.state = state
         self.endpoint = endpoint
+        self.length = length
     def __str__(self):
         return str(self.K) + ", " + str(self.alpha) + ", " + self.state.value + ", " + str(self.endpoint)

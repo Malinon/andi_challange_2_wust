@@ -26,7 +26,8 @@ def analyze_trajectory(trajectory, cp_detector, alpha_regressor, D_regressor, cl
         segments.append(SegmentProperties(D_regressor(traj_selected),
                                           alpha_regressor(traj_selected),
                                           classifier(traj_selected),
-                                          change_points[i]))
+                                          change_points[i],
+                                          change_points[i] - change_points[i-1]))
     return segments
 
 

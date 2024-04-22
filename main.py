@@ -3,7 +3,7 @@ import joblib
 
 from input_utils import get_fovs_of_experiment
 from common import State
-from ensemble import naive_aggregation
+from ensemble import naive_aggregation, simple_aggregation
 from segmentation import mw_cp_detection, analyze_fov, single_exceed_strategy
 from estimators import estimate_with_noise_1, estimate_with_noise_3
 from submission_utils import create_submission
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         experiment_result = [analyze_fov(fovs[fov_id],  cp_detector, alpha_estim, D_estim, dummy_classifier)
                                     for fov_id in range(len(fovs))]
         joblib.dump(experiment_result, "exp_res_{}".format(i))
-        ensemble_res = naive_aggregation(experiment_result)
+        ensemble_res = simple_aggregation(experiment_result)
         track[i] = experiment_result
         ens[i] = ensemble_res
     create_submission(track, ens)
