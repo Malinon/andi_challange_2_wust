@@ -7,7 +7,7 @@ import zipfile
 __TRACK_TAG = "track_2"
 __EXPERIMENT_PREFIX = "exp_"
 __RESULT_FORMAT = "fov_{}.txt"
-__ENSEMBLE_FORMAT = 
+__ENSEMBLE_OUT_FILE= "ensemble_labels.txt"
 __ENS_HEADER_FORMAT = "model: {}; num_state: {}"
 __SUB_WORKING_DIR = "sub_temp"
 __SEPARATOR = ", "
@@ -27,10 +27,10 @@ def save_fov(dir_path, fov, experiment):
 
 def save_ensemble(dir_path, experiment_id, ensemble_results):
     ens_result = ensemble_results[experiment_id]
-    states_num = get_number_of_states(ens_result)
-    os.path.join(dir_path, __ENSEMBLE_FORMAT.format(fov))
+    states_num = ens_result.get_number_of_states()
+    output_name = os.path.join(dir_path, __ENSEMBLE_OUT_FILE)
     with open(output_name, 'a') as f:
-        f.write(__ENS_HEADER_FORMAT.format(ens_result.model.value, states_num))
+        f.write(__ENS_HEADER_FORMAT.format(str(ens_result.model), states_num))
         f.write("\n")
         a_mean_desc = functools.reduce(lambda a, b: a + __ENS_SEPARATOR + b, (str(a_mean) for a_mean in  ens_result.alphas_mean))
         f.write(a_mean_desc + "\n")
@@ -44,7 +44,7 @@ def save_ensemble(dir_path, experiment_id, ensemble_results):
         f.write(weights_desc)
 
 
-def create_submission(experiments, model, alphas_mean, alphas_var, d_mean, d_alpha, weights):
+def create_submission(experiments, ensemble_results):
     if os.path.isdir(__SUB_WORKING_DIR):
         shutil.rmtree(__SUB_WORKING_DIR)
     os.mkdir(__SUB_WORKING_DIR)
@@ -55,7 +55,7 @@ def create_submission(experiments, model, alphas_mean, alphas_var, d_mean, d_alp
         exp_name = __EXPERIMENT_PREFIX + str(exp_id)
         exp_dir_path = os.path.join(TRACK_DIR_PATH, exp_name)
         os.mkdir(exp_dir_path)
-        save_ensemble(exp_dir_path, experiment_id, ensemble_results)
+        save_ensemble(exp_dir_path, exp_id, ensemble_results)
         for fov in range(len(experiments[exp_id])):
             save_fov(exp_dir_path, fov, experiments[exp_id])
 

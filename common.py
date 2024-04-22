@@ -13,16 +13,18 @@ class Model(Enum):
     IMMOBILE_TRAPS ='immobile_traps',
     DIMERIZATION = 'dimerization',
     CONFINEMENT = 'confinement'
+    def __str__(self):
+        return str(self.value[0])
     
 
 
 class EnsembleResult():
-    def __init__(self, model, alphas_mean, alphas_var, d_mean, d_alpha, weights):
+    def __init__(self, model, alphas_mean, alphas_var, d_mean, d_var, weights):
         self.model = model
         self.alphas_mean  = alphas_mean
         self.alphas_var = alphas_var
         self.d_mean = d_mean
-        self.d_alpha = d_alpha
+        self.d_var = d_var
         self.weights = weights
     def get_number_of_states(self):
         return len(self.alphas_mean)
