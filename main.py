@@ -29,6 +29,7 @@ if __name__ == "__main__":
         experiment_result = [analyze_fov(fovs[fov_id],  cp_detector, alpha_estim, D_estim, dummy_classifier)
                                     for fov_id in range(len(fovs))]
         joblib.dump(experiment_result, "exp_res_{}".format(i))
+        #experiment_result = joblib.load("exp_res_{}".format(i))
         ensemble_res = simple_aggregation(experiment_result)
         track[i] = experiment_result
         ens[i] = ensemble_res

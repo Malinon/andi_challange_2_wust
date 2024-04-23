@@ -1,6 +1,7 @@
 import numpy as np
 from common import EnsembleResult, Model, State
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 
 __PER_CLUSTER = 10
 
@@ -33,7 +34,7 @@ def get_optim_clustering(data_points):
             sil_score_max = sil_score
             best_n_clusters = n_clusters
     model = KMeans(n_clusters = best_n_clusters)
-    return model.fit_predict(data_points)
+    return model.fit_predict(data_points), best_n_clusters
 
 def __split_data_by_cluster(data, labels, cluster_num):
     clusters = [[]  for _ in range(cluster_num)]
@@ -46,8 +47,8 @@ def __get_basic_characteristics(values):
 
 
 def __get_characteristics_of_cluster(cluster):
-    alphas = [cluster(i)[0] for i in len(cluster)]
-    ds = [cluster(i)[1] for i in len(cluster)]
+    alphas = [cluster[i][0] for i in range(len(cluster))]
+    ds = [cluster[i][1] for i in range(len(cluster))]
     alphas_mean, alphas_vars = __get_basic_characteristics(alphas)
     ds_mean, ds_vars = __get_basic_characteristics(ds)
     return alphas_mean, alphas_vars, ds_mean, ds_vars
@@ -70,7 +71,7 @@ def __get_ensemble_result_from_clusters(estim_points, segments, labels, cluster_
         alpha_vars.append(a_v)
         d_means.append(d_m)
         d_vars.append(d_v)
-    weights = __get_weights(segments, labels)
+    weights = __get_weights(segments, labels, cluster_num)
     return EnsembleResult(model, alpha_means, alpha_vars, d_means, d_vars, weights)
     
 def __get_number_of_trajectories(results):
@@ -113,7 +114,7 @@ def simple_aggregation(results):
     number_of_change_points = len(all_segments) - number_of_trajectories
     print(number_of_change_points, " cp - tr ", number_of_trajectories)
     estimates = [ (all_segments[i].alpha, all_segments[i].K) for i in range(len(all_segments))  ]
-    if number_of_change_points == 1:
+    if number_of_change_points == 0:
         return naive_aggregation(results)
     model = None
     labels = None
