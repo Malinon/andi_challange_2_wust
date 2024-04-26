@@ -15,6 +15,17 @@ class Model(Enum):
     CONFINEMENT = 'confinement'
     def __str__(self):
         return str(self.value[0])
+    def get_model_by_id(id_num):
+        if id_num == 0:
+            return Model.SINGLE_STATE
+        if id_num == 1:
+            return Model.MULTI_STATE
+        if id_num == 2:
+            return Model.IMMOBILE_TRAPS
+        if id_num == 3:
+            return Model.DIMERIZATION
+        if id_num == 4:
+            return Model.CONFINEMENT
     
 
 

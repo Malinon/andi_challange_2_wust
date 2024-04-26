@@ -1,4 +1,5 @@
 import numpy as np
+import model
 from common import EnsembleResult, Model, State
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
@@ -102,33 +103,42 @@ def __create_list_with_all_segments(results):
 def naive_aggregation(single_trajectory_results):
     # TDOD: This ensmble really needs to be replaced
     alphas = __extract_alphas(single_trajectory_results)
-    alpha_mean, alphas_var = __get_basic_characteristics(alphas)
+    alphas_mean, alphas_var = __get_basic_characteristics(alphas)
     ds = __extract_ds(single_trajectory_results)
     ds_mean, ds_var = __get_basic_characteristics(ds)
-    return EnsembleResult(Model.SINGLE_STATE, [alpha_mean], [alpha_var], [d_mean], [d_var], [1.0])
+    return EnsembleResult(Model.SINGLE_STATE, [alphas_mean], [alphas_var], [ds_mean], [ds_var], [1.0])
 
-def simple_aggregation(results):
+
+def __get_model_by_vote(classifier, raw_trajectoriers):
+    count_dict= {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+    probabilities = classifier.predict(model.prepare_input(raw_trajectoriers))
+    preds = model.get_preds(probabilities)
+    for pred in preds:
+        count_dict[pred] = count_dict[pred] + 1
+    max_count = 0
+    max_id = 0
+    print("States: ", count_dict)
+    for state in count_dict:
+        if count_dict[state] > max_count:
+            max_id = state
+            max_count = count_dict[state]
+    return  Model.get_model_by_id(max_id)
+
+
+def simple_aggregation(results, classifier, raw_trajectoriers):
     # TODO: This method also should be upgraded/replaced in the future
     all_segments = __create_list_with_all_segments(results)
-    number_of_trajectories = __get_number_of_trajectories(results)
-    number_of_change_points = len(all_segments) - number_of_trajectories
-    print(number_of_change_points, " cp - tr ", number_of_trajectories)
     estimates = [ (all_segments[i].alpha, all_segments[i].K) for i in range(len(all_segments))  ]
-    if number_of_change_points == 0:
-        return naive_aggregation(results)
-    model = None
     labels = None
-    immobile_num, confined_num = __get_restricted_states_count(all_segments)
-    if immobile_num > 0 or confined_num > 0:
-        model_clust = KMeans(n_clusters = 2)
-        labels, num_of_states = model.fit_predict(estimates)
-        if confined_num > immobile_num:
-            model = Model.CONFINEMENT
-        else:
-            model = Model.IMMOBILE_TRAPS
+    num_of_states = None
+    predicted_model = __get_model_by_vote(classifier, raw_trajectoriers)
+    if predicted_model in (Model.CONFINEMENT, Model.IMMOBILE_TRAPS, Model.DIMERIZATION):
+        num_of_states = 2
+        clusterer = KMeans(n_clusters = 2)
+        labels = clusterer.fit_predict(estimates)
+    elif predicted_model == Model.SINGLE_STATE:
+        return naive_aggregation(results)
     else:
-        # It is multistate or dimerization
-        # Dimerization is not supported at this moment
-        model = Model.MULTI_STATE
+        # It is multistate
         labels, num_of_states = get_optim_clustering(estimates)
-    return __get_ensemble_result_from_clusters(estimates, all_segments, labels, num_of_states, model)
+    return __get_ensemble_result_from_clusters(estimates, all_segments, labels, num_of_states, predicted_model)

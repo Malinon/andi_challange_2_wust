@@ -1,14 +1,17 @@
 import sys
-import joblib 
+import joblib
 
+import model
 from input_utils import get_fovs_of_experiment
 from common import State
 from ensemble import naive_aggregation, simple_aggregation
-from segmentation import mw_cp_detection, analyze_fov, single_exceed_strategy
+from segmentation import analyze_fov, MultiEstimCost, mw_rupture_cp_detection
 from estimators import estimate_with_noise_1, estimate_with_noise_3
 from submission_utils import create_submission
 
 THRASHOLD = 0.1
+
+__WEIGHTS_PATH = "../model.weights.h5"
 
 if __name__ == "__main__":
     def alpha_estim(x):
@@ -19,18 +22,21 @@ if __name__ == "__main__":
         return D
     track = dict()
     ens = dict()
+    class_model = model.generate_model()
+    class_model.load_weights(__WEIGHTS_PATH)
     for i in range(10):
         print("Exp ", i)
         experiment_path = "../public_dat/track_2/exp_{}".format(i)
         fovs = get_fovs_of_experiment(experiment_path)
         dummy_classifier = lambda x: State.Free
-        strategy = lambda a1, a2, d1, d2: single_exceed_strategy(a1, a2, THRASHOLD) or single_exceed_strategy(d1, d2, THRASHOLD)
-        cp_detector = lambda x: mw_cp_detection(x, [alpha_estim], [D_estim], 40, strategy)
-        experiment_result = [analyze_fov(fovs[fov_id],  cp_detector, alpha_estim, D_estim, dummy_classifier)
-                                    for fov_id in range(len(fovs))]
-        joblib.dump(experiment_result, "exp_res_{}".format(i))
-        #experiment_result = joblib.load("exp_res_{}".format(i))
-        ensemble_res = simple_aggregation(experiment_result)
+        #cost = SingleEstimCost(alpha_estim)
+        cost = MultiEstimCost([alpha_estim, D_estim])
+        cp_detector = lambda x: mw_rupture_cp_detection(x, cost, 60)
+        #experiment_result = [analyze_fov(fovs[fov_id],  cp_detector, alpha_estim, D_estim, dummy_classifier)
+        #                            for fov_id in range(len(fovs))]
+        #joblib.dump(experiment_result, "exp_res_{}".format(i))
+        experiment_result = joblib.load("exp_res_{}".format(i))
+        ensemble_res = simple_aggregation(experiment_result, class_model, fovs)
         track[i] = experiment_result
         ens[i] = ensemble_res
     create_submission(track, ens)

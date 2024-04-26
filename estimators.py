@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 import scipy as sp
 
+__DT = 0.1
+
 
 def moving_average(data, window_size):
     """
@@ -70,6 +72,7 @@ def generate_empirical_msd(trajectory,mlag,k=2):
     r = []
     for lag in range(1,mlag+1):
         r.append(empirical_msd(trajectory, lag,k))
+    #print(len(trajectory), " ",mlag , " msd ",r)
     return np.array(r)
 
 def generate_theoretical_msd_with_noise(n_list, D, dt, alpha, sigma_2, dim=2):
@@ -111,7 +114,7 @@ def estimate_with_noise_2(trajectory,mlag,k=2):
     "Optimal parameters for anomalous-diffusion-exponent estimation from noisy data"
     Phys. Rev. E 98, 062139 (2018).
     """
-    dt = 1.0 / len(trajectory[:,0])
+    dt = __DT
     empirical_msd = generate_empirical_msd(trajectory,mlag,k)
     n_list = np.array(range(1,mlag+1)) #inaczej niż w oryginale
     s2_max = empirical_msd[0]
@@ -138,7 +141,8 @@ def estimate_with_noise_3(trajectory,mlag,k=2):
     "Optimal parameters for anomalous-diffusion-exponent estimation from noisy data"
     Phys. Rev. E 98, 062139 (2018).
     """
-    dt = 1.0 / len(trajectory[:,0])  
+    
+    mlag = min(mlag, len(trajectory) - 1)
     empirical_msd = generate_empirical_msd(trajectory,mlag,k)
     n_list = np.array(range(1,mlag+1)) #POTENCJALNY BLAD w RANGE
     alpha_0 = 1
@@ -150,7 +154,7 @@ def estimate_with_noise_3(trajectory,mlag,k=2):
         return r
 
     popt, cov = sp.optimize.curve_fit(
-                    lambda x, D, a: msd_fitting(x, D, dt, a),
+                    lambda x, D, a: msd_fitting(x, D, __DT, a),
                     n_list, empirical_msd, p0 =(D_0,alpha_0), bounds=([0,0],[np.inf,2]), 
                     method = 'dogbox', ftol = eps)   
         

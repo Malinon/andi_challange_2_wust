@@ -11,7 +11,7 @@ __ENSEMBLE_OUT_FILE= "ensemble_labels.txt"
 __ENS_HEADER_FORMAT = "model: {}; num_state: {}"
 __SUB_WORKING_DIR = "sub_temp"
 __SEPARATOR = ", "
-__ENS_SEPERATOR = '; '
+__ENS_SEPARATOR = '; '
 __SUBMISSION_ZIP_NAME = "submission.zip"
 
 def save_fov(dir_path, fov, experiment):

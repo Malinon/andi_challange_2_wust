@@ -1,25 +1,45 @@
+import ruptures as rpt
+import numpy as np
+from ruptures.base import BaseCost
+
 from common import SegmentProperties
 
-def single_exceed_strategy(estimates_first, estimates_second, thrashold):
-    return any(abs(estimates_first[i] - estimates_second[i]) for i in range(len(estimates_first)))
 
-def mw_cp_detection(trajectory, alpha_estimators, D_estimators, window_width, strategy):
-    change_points = [0]
-    traj_len = len(trajectory)
-    for wn_start_point in range(traj_len - window_width * 2 - 1):
-        first_window = trajectory[wn_start_point:(wn_start_point + window_width)]
-        second_windows = trajectory[(wn_start_point + window_width - 1):(wn_start_point + 2 * window_width)]
-        alpha_estimates_first = [est(first_window) for est in alpha_estimators]
-        D_estimates_first = [est(first_window) for est in D_estimators]
-        alpha_estimates_second = [est(first_window) for est in alpha_estimators]
-        D_estimates_second = [est(first_window) for est in D_estimators]
-        if strategy(alpha_estimates_first, alpha_estimates_second, D_estimates_first, D_estimates_second):
-            change_points.append(wn_start_point)
-    change_points.append(traj_len)
+__DIM = 2
+__NOISE_STANDARD_DEVIATION = 0.12 # In ANDI noise's standard deviation is 0.12 pixel
+
+class MultiEstimCost(BaseCost):
+    """Custom cost for exponential signals."""
+
+    # The 2 following attributes must be specified for compatibility.
+    model = ""
+    min_size = 3
+
+    def __init__(self, estimators):
+        self.estimators = estimators
+
+    def fit(self, signal):
+        self.signal = signal
+
+    def error(self, start, end):
+        half_of_interval = start + int( (end - start) / 2)
+        first_half = self.signal[start:half_of_interval]
+        second_half = self.signal[half_of_interval:end]
+        estimates_1 = [self.estimators[i](first_half) for i in range(len(self.estimators))]
+        estimates_2 = [self.estimators[i](second_half) for i in range(len(self.estimators))]
+        return sum(abs(estimates_1[i] - estimates_2[i]) for i in range(len(estimates_1)))
+
+def mw_rupture_cp_detection(trajectory, custom_cost, window_width, penalty=None):
+    algo = rpt.Window(width=window_width, custom_cost=custom_cost, jump=1)
+    if penalty == None:
+        penalty = np.log(len(trajectory)) * __DIM * (__NOISE_STANDARD_DEVIATION**2)
+    algo.fit(trajectory)
+    change_points = algo.predict(epsilon=penalty)
     return change_points
 
 def analyze_trajectory(trajectory, cp_detector, alpha_regressor, D_regressor, classifier):
-    change_points = cp_detector(trajectory)
+    change_points = [0] + cp_detector(trajectory)# + [len(trajectory)] # This is technical step, which simplify saving results
+    #print("Change points: ", change_points)
     segments = []
     for i in range(1, len(change_points)):
         traj_selected = trajectory[change_points[i-1]:(change_points[i]+1)]
