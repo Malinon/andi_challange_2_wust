@@ -6,7 +6,7 @@ from common import SegmentProperties
 
 
 __DIM = 2
-__NOISE_STANDARD_DEVIATION = 0.12 # In ANDI noise's standard deviation is 0.12 pixel
+__NOISE_STANDARD_DEVIATION = 0.22 # In ANDI noise's standard deviation is 0.12 pixel
 
 class MultiEstimCost(BaseCost):
     """Custom cost for exponential signals."""
