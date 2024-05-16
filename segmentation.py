@@ -37,6 +37,13 @@ def mw_rupture_cp_detection(trajectory, custom_cost, window_width, penalty=None)
     change_points = algo.predict(epsilon=penalty)
     return change_points
 
+def simple_state_classifier(trajectory, alpha, D):
+    if alpha >= 1.9
+        return State.Directed
+    if alpha <= 0.05 and D <= 0.05:
+        return State.Immobile
+    return State.Free
+
 def analyze_trajectory(trajectory, cp_detector, alpha_regressor, D_regressor, classifier):
     change_points = [0] + cp_detector(trajectory)# + [len(trajectory)] # This is technical step, which simplify saving results
     #print("Change points: ", change_points)
