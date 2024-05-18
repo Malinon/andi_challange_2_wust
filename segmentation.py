@@ -38,7 +38,7 @@ def mw_rupture_cp_detection(trajectory, custom_cost, window_width, penalty=None)
     return change_points
 
 def simple_state_classifier(trajectory, alpha, D):
-    if alpha >= 1.9
+    if alpha >= 1.9:
         return State.Directed
     if alpha <= 0.05 and D <= 0.05:
         return State.Immobile
