@@ -2,7 +2,7 @@ import ruptures as rpt
 import numpy as np
 from ruptures.base import BaseCost
 
-from common import SegmentProperties
+from common import SegmentProperties, State
 
 
 __DIM = 2
@@ -50,9 +50,11 @@ def analyze_trajectory(trajectory, cp_detector, alpha_regressor, D_regressor, cl
     segments = []
     for i in range(1, len(change_points)):
         traj_selected = trajectory[change_points[i-1]:(change_points[i]+1)]
-        segments.append(SegmentProperties(D_regressor(traj_selected),
-                                          alpha_regressor(traj_selected),
-                                          classifier(traj_selected),
+        alpha = alpha_regressor(traj_selected)
+        D = D_regressor(traj_selected)
+        segments.append(SegmentProperties(D,
+                                          alpha,
+                                          classifier(traj_selected, alpha, D),
                                           change_points[i],
                                           change_points[i] - change_points[i-1]))
     return segments

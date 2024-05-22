@@ -1,5 +1,7 @@
 import numpy as np
 from keras.saving import load_model
+from src.deep.tf_dain import Dain
+from src.deep.attention_layer import Attention
 
 
 class CPDetector:
@@ -18,7 +20,7 @@ class CPDetector:
             X.append(trajectory[i:i+self.window_length, :])
         return np.array(X)
     
-    def get_segments(self, prob_seq, threshold=0.5):
+    def get_segments(self, prob_seq, threshold=0.95):
         """
         Get the segement of subsequent frames for which probability of change point is greater than threshold.
         """

@@ -98,6 +98,7 @@ def estimate_with_noise_1(trajectory,mlag,k=2):
     "Optimal parameters for anomalous-diffusion-exponent estimation from noisy data"
     Phys. Rev. E 98, 062139 (2018).
     """
+    mlag = min(mlag, len(trajectory) - 1)
     max_number_of_points_in_msd = mlag+1 #inaczej niż w oryginale
     log_msd = np.log(generate_empirical_msd(trajectory,mlag,k))
     log_n = np.array([np.log(i) for i in range(1,max_number_of_points_in_msd)]) 
@@ -115,6 +116,7 @@ def estimate_with_noise_2(trajectory,mlag,k=2):
     Phys. Rev. E 98, 062139 (2018).
     """
     dt = __DT
+    mlag = min(mlag, len(trajectory) - 1)
     empirical_msd = generate_empirical_msd(trajectory,mlag,k)
     n_list = np.array(range(1,mlag+1)) #inaczej niż w oryginale
     s2_max = empirical_msd[0]
@@ -125,14 +127,16 @@ def estimate_with_noise_2(trajectory,mlag,k=2):
 
     N = len(trajectory[:,0])
     #dt = 
-        
-    popt, cov = sp.optimize.curve_fit(
+    try:
+        popt, cov = sp.optimize.curve_fit(
                   lambda x, D, a, s2: generate_theoretical_msd_with_noise(x, D, dt, a, s2),
                   n_list, empirical_msd, p0 =(D_0,alpha_0,s2_0) , bounds=([0,0,0],[np.inf,2,s2_max]), 
                   method = 'trf', ftol = eps)                   
-    D_est = popt[0]
-    alpha_est = popt[1]
-    return D_est, alpha_est
+        D_est = popt[0]
+        alpha_est = popt[1]
+        return D_est, alpha_est
+    except RuntimeError:
+        return 0, 0
     
 def estimate_with_noise_3(trajectory,mlag,k=2):
     """
