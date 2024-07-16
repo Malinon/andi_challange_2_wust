@@ -5,8 +5,6 @@
 #
 # JS, 13.03.2024
 
-from andi_datasets.models_phenom import models_phenom
-
 # auxiliaries
 import glob
 import re

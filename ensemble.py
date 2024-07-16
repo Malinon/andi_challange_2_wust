@@ -11,7 +11,8 @@ def __extract_alphas(single_trajectory_results):
     for fov in single_trajectory_results:
         for traj_ind in fov:
             for segment in fov[traj_ind]:
-                alphas.append(segment.alpha) 
+                if segment.length > 6:
+                    alphas.append(segment.alpha) 
     return alphas
 
 def __extract_ds(single_trajectory_results):
@@ -19,7 +20,8 @@ def __extract_ds(single_trajectory_results):
     for fov in single_trajectory_results:
         for traj_ind in fov:
             for segment in fov[traj_ind]:
-                ds.append(segment.K)
+                if segment.length > 6:
+                    ds.append(segment.K)
     return ds
 
 
@@ -40,7 +42,7 @@ def get_optim_clustering(data_points):
 def __split_data_by_cluster(data, labels, cluster_num):
     clusters = [[]  for _ in range(cluster_num)]
     for i, label in enumerate(labels):
-        clusters[label] = [data[i]]
+        clusters[label].append(data[i])
     return clusters
 
 def __get_basic_characteristics(values):
